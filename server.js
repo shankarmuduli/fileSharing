@@ -16,13 +16,12 @@ app.get('/',(req,res)=>{
 })
 app.use('/files/download',require('./routes/download'))
 app.use('/files',require('./routes/show'))
-schedule.scheduleJob('* * * * *',async ()=>{
+schedule.scheduleJob('0 0 * * *',async ()=>{
     try{
         console.log("Hello");
         const pastDate=new Date(Date.now() -24 * 60 * 60 * 1000)
         console.log(pastDate);
-        const FileList=await File.find({createdAt:{$lt:pastDate}})
-        console.log(FileList);
+        const FileList=await File.find({createdAt:{ $lte:new Date(pastDate).toISOString()}})
         if(FileList.length){
             for (const file of FileList){
                 try{
@@ -31,16 +30,15 @@ schedule.scheduleJob('* * * * *',async ()=>{
                     console.log(`Successfully Deleted ${file.filename}`);
     
                 }catch(err){
-                    console.log(`Error while deleting file ${file.filename}`);
+                    console.log(`Error while deleting file ${err}`);
     
                 }
             }
             console.log('Job Done');
     
         }
-    }catch{
-        console.log({error:'Something went wrong.!'});
-
+    }catch(err){
+        console.log(`Error while deleting file :${err}`);
     }
     
 })
